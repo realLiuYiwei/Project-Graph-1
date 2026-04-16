@@ -204,24 +204,27 @@ fig_a = make_subplots(
 
 fig_a.add_trace(
     go.Scatter(
-        x=days, y=mean_bench * 100,
-        name="Benchmark (QQQ)",
-        line=dict(color="#595959", width=1.4, dash="dot"),
-        hovertemplate="Day %{x}: QQQ %{y:.2f}%<extra></extra>",
-        showlegend=True,
+        x=days, y=mean_stock * 100,
+        name="Mean CR",
+        legendrank=1,
+        line=dict(color="#E07A3F", width=1.8),
+        hovertemplate="Day %{x}: Avg stock %{y:.2f}%<extra></extra>",
+        showlegend=True
     ),
     row=1, col=1,
 )
 fig_a.add_trace(
     go.Scatter(
-        x=days, y=mean_stock * 100,
-        name="Mean CR",
-        line=dict(color="#E07A3F", width=1.8),
-        hovertemplate="Day %{x}: Avg stock %{y:.2f}%<extra></extra>",
-        showlegend=True,
+        x=days, y=mean_bench * 100,
+        name="Benchmark (QQQ)",
+        legendrank=2,
+        line=dict(color="#595959", width=1.4, dash="dot"),
+        hovertemplate="Day %{x}: QQQ %{y:.2f}%<extra></extra>",
+        showlegend=True
     ),
     row=1, col=1,
 )
+
 fig_a.add_trace(
     go.Scatter(
         x=days,
@@ -243,6 +246,7 @@ fig_a.add_trace(
         fill="tonexty",
         fillcolor="rgba(72,120,207,0.20)",
         name="Mean CAR (±95% CI)",
+        legendrank=3,
         hovertemplate="Day %{x}: 95% CI [%{y:.3f}%, %{customdata:.3f}%]<extra></extra>",
         customdata=upper_bound * 100,
         showlegend=True,
@@ -254,6 +258,7 @@ fig_a.add_trace(
     go.Scatter(
         x=days, y=mean_car * 100,
         name="Mean CAR",
+        legendrank=4,
         line=dict(color="#4878CF", width=2.2),
         hovertemplate="Day %{x}: %{y:.3f}%<extra></extra>",
         showlegend=True,
@@ -309,18 +314,18 @@ fig_a.add_annotation(
 fig_a.update_layout(
     title=dict(
         text=(
-            f"Analysis of Mean Cumulative Abnormal Return (CAR) Around Tech Layoff Announcements"
-            "within 20 trading days post-layoff"
-            f"<br><sup>Mean Cumulative Abnormal Return Around Layoff Announcements "
+           "Mean Cumulative Return (CR) and Cumulative Abnormal Return (CAR) Around Tech Layoff Announcements (±20 Trading Days)"
+            f"<br><sup>Sample Size: {n_total} Events | Comparison: Stock Mean vs. Benchmark ({BENCHMARK}) | Additional Metric: CAR 95% Confidence Interval</sup>"
             f"(n = {n_total}, benchmark = {BENCHMARK})</sup>"
         ),
         font=dict(size=14),
-        x=0, xanchor="left",
+        x=0.5, xanchor="center",
     ),
     height=600,
     margin=dict(l=ALIGN_LEFT_MARGIN, r=ALIGN_RIGHT_MARGIN, t=78, b=50),
     showlegend=True,
     legend=dict(
+        traceorder="normal",
         orientation="v",
         yanchor="bottom",
         y=0.02,
@@ -477,13 +482,12 @@ fig_b.add_vline(x=0, line=dict(color="#222", dash="dash", width=1.6))
 fig_b.update_layout(
     title=dict(
         text=(
-            f"CAR Heatmap — {N_eff} largest layoff events by headcount, sorted by "
-            "T+20 CAR (best → worst)"
-            f"<br><sup>Filter: ranked by absolute laid-off count "
-            f"(target N = {N}, available valid events = {n_total})</sup>"
+        "Time-Series Heatmap of Cumulative Abnormal Return (CAR) for Major Tech Layoff Events"
+        f"<br><sup>Data Scope: Top {N_eff} Events by Absolute Headcount Reduction | Sorting Rule: Descending Order by T+20 CAR</sup>"
+        f"(target N = {N}, available valid events = {n_total})</sup>"
         ),
         font=dict(size=14),
-        x=0, xanchor="left",
+        x=0.5, xanchor="center",
     ),
     height=max(700, N_eff * 16 + 160),
     margin=dict(l=ALIGN_LEFT_MARGIN, r=ALIGN_RIGHT_MARGIN, t=78, b=55),
