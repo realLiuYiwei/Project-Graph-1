@@ -21,7 +21,8 @@ st.markdown(
 #  CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
-WINDOW    = 20
+WINDOW_PRE  = 90
+WINDOW_POST = 60
 BENCHMARK = "QQQ"
 N         = 70   # top N events by layoff count
 
@@ -66,7 +67,7 @@ def load_data():
     ].reset_index(drop=True)
 
     tickers    = sorted(df_events["Ticker"].unique().tolist()) + [BENCHMARK]
-    start_date = (df_events["Date"].min() - pd.Timedelta(days=90)).strftime("%Y-%m-%d")
+    start_date = (df_events["Date"].min() - pd.Timedelta(days=140)).strftime("%Y-%m-%d")
     end_date   = (pd.Timestamp.now() + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
 
     raw = yf.download(tickers, start=start_date, end=end_date,
@@ -100,10 +101,10 @@ def compute_cars(_df_events, _prices, _returns):
             event_date = future[0]
 
         loc = _returns.index.get_loc(event_date)
-        if loc < WINDOW or loc + WINDOW >= len(_returns):
+        if loc < WINDOW_PRE or loc + WINDOW_POST >= len(_returns):
             continue
 
-        win_r = _returns.iloc[loc - WINDOW: loc + WINDOW + 1]
+        win_r = _returns.iloc[loc - WINDOW_PRE: loc + WINDOW_POST + 1]
         if ticker not in win_r.columns or BENCHMARK not in win_r.columns:
             continue
 
@@ -129,7 +130,7 @@ def compute_cars(_df_events, _prices, _returns):
     car_matrix   = np.array(all_cars)
     price_matrix = np.array(all_price_windows)
     bench_matrix = np.array(all_bench_windows)
-    days         = np.arange(-WINDOW, WINDOW + 1)
+    days         = np.arange(-WINDOW_PRE, WINDOW_POST + 1)
 
     return (
         car_matrix,
@@ -156,7 +157,7 @@ n_total = len(car_matrix)
 
 ALIGN_LEFT_MARGIN = 210
 ALIGN_RIGHT_MARGIN = 120
-X_AXIS_RANGE = [-WINDOW - 0.5, WINDOW + 0.5]
+X_AXIS_RANGE = [-WINDOW_PRE - 0.5, WINDOW_POST + 0.5]
 X_AXIS_DOMAIN = [0.0, 0.92]
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -188,8 +189,8 @@ car_pad = max(0.08 * car_span, 0.12)
 car_ymin = min(np.floor((car_min - car_pad) * 10) / 10, -0.1)
 car_ymax = max(np.ceil((car_max + car_pad) * 10) / 10, 0.1)
 
-mean_car_t20 = float(mean_car_pct[-1])
-trend_direction = "upward" if mean_car_t20 >= 0 else "downward"
+mean_car_t60 = float(mean_car_pct[-1])
+trend_direction = "upward" if mean_car_t60 >= 0 else "downward"
 
 top_label_gap = abs(float((mean_stock[-1] - mean_bench[-1]) * 100))
 stock_label_shift = 9 if top_label_gap < 0.15 else 0
@@ -267,13 +268,13 @@ fig_a.add_trace(
 )
 
 fig_a.add_vline(x=0, line=dict(color="#333", dash="dash", width=1.4))
-fig_a.add_shape(type="line", x0=-WINDOW, x1=WINDOW, y0=0, y1=0,
+fig_a.add_shape(type="line", x0=-WINDOW_PRE, x1=WINDOW_POST, y0=0, y1=0,
                 line=dict(color="#c9c9c9", width=0.8), row=1, col=1)
-fig_a.add_shape(type="line", x0=-WINDOW, x1=WINDOW, y0=0, y1=0,
+fig_a.add_shape(type="line", x0=-WINDOW_PRE, x1=WINDOW_POST, y0=0, y1=0,
                 line=dict(color="#1f1f1f", width=1.8), row=2, col=1)
 
 fig_a.add_annotation(
-    x=WINDOW,
+    x=WINDOW_POST,
     y=float(mean_bench[-1] * 100),
     xref="x",
     yref="y",
@@ -286,7 +287,7 @@ fig_a.add_annotation(
     font=dict(color="#595959", size=12),
 )
 fig_a.add_annotation(
-    x=WINDOW,
+    x=WINDOW_POST,
     y=float(mean_stock[-1] * 100),
     xref="x",
     yref="y",
@@ -299,7 +300,7 @@ fig_a.add_annotation(
     font=dict(color="#E07A3F", size=12),
 )
 fig_a.add_annotation(
-    x=WINDOW,
+    x=WINDOW_POST,
     y=float(mean_car[-1] * 100),
     xref="x2",
     yref="y2",
@@ -314,9 +315,10 @@ fig_a.add_annotation(
 fig_a.update_layout(
     title=dict(
         text=(
-           "Mean Cumulative Return (CR) and Cumulative Abnormal Return (CAR) Around Tech Layoff Announcements (±20 Trading Days)"
-            f"<br><sup>Sample Size: {n_total} Events | Comparison: Stock Mean vs. Benchmark ({BENCHMARK}) | Additional Metric: CAR 95% Confidence Interval</sup>"
-            f"(n = {n_total}, benchmark = {BENCHMARK})</sup>"
+            "Mean Cumulative Return (CR) and Cumulative Abnormal Return (CAR) Around Tech Layoff Announcements "
+            f"(T={-WINDOW_PRE} to T=+{WINDOW_POST} Trading Days)"
+            f"<br><sup>Sample Size: {n_total} Events | Comparison: Stock Mean vs. Benchmark ({BENCHMARK}) | "
+            "Additional Metric: CAR 95% Confidence Interval</sup>"
         ),
         font=dict(size=14),
         x=0.5, xanchor="center",
@@ -372,16 +374,20 @@ fig_a.update_yaxes(
 )
 
 st.plotly_chart(fig_a, use_container_width=True)
+st.caption(
+    "Note: A continuous drop in CAR during the [-90, 0] window often serves as an early warning signal "
+    "for deteriorating business fundamentals."
+)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-#  PANEL B — Heatmap: top 70 by layoff count, sorted best→worst CAR at T+20
+#  PANEL B — Heatmap: top 70 by layoff count, sorted best→worst CAR at T+60
 # ═══════════════════════════════════════════════════════════════════════════════
 
 car_final = car_matrix[:, -1]
 
 # top 70 by layoff count
 pool_idx  = np.argsort(all_laid_off)[::-1][:min(N, n_total)]
-# within that pool, order best → worst CAR at T+20
+# within that pool, order best → worst CAR at T+60
 order     = np.argsort(car_final[pool_idx])[::-1]
 ranked_idx = pool_idx[order]
 N_eff     = len(ranked_idx)
@@ -425,7 +431,7 @@ for e_idx in range(N_eff):
         )
     hover_text.append(row_texts)
 
-COLOR_BOUNDS = [-25, -12, -6, -2, -0.5, 0.5, 2, 6, 12, 25]
+COLOR_BOUNDS = [-40, -20, -10, -4, -1, 1, 4, 10, 20, 40]
 COLOR_STEPS = [
     "#67001f",
     "#b2182b",
@@ -467,7 +473,7 @@ fig_b = go.Figure(
         colorbar=dict(
             title=dict(text="CAR (%)", side="right"),
             tickformat=".0f",
-            tickvals=[-25, -12, -6, -2, 0, 2, 6, 12, 25],
+            tickvals=[-40, -20, -10, -4, 0, 4, 10, 20, 40],
             lenmode="fraction", len=0.80,
             thickness=14,
             x=0.95,
@@ -483,8 +489,8 @@ fig_b.update_layout(
     title=dict(
         text=(
         "Time-Series Heatmap of Cumulative Abnormal Return (CAR) for Major Tech Layoff Events"
-        f"<br><sup>Data Scope: Top {N_eff} Events by Absolute Headcount Reduction | Sorting Rule: Descending Order by T+20 CAR</sup>"
-        f"(target N = {N}, available valid events = {n_total})</sup>"
+        f"<br><sup>Data Scope: Top {N_eff} Events by Absolute Headcount Reduction | Sorting Rule: Descending Order by T+60 CAR</sup>"
+        f"<br><sup>Window: T={-WINDOW_PRE} to T=+{WINDOW_POST} | Target N = {N} | Available Valid Events = {n_total}</sup>"
         ),
         font=dict(size=14),
         x=0.5, xanchor="center",
