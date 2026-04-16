@@ -192,9 +192,22 @@ car_ymax = max(np.ceil((car_max + car_pad) * 10) / 10, 0.1)
 mean_car_t60 = float(mean_car_pct[-1])
 trend_direction = "upward" if mean_car_t60 >= 0 else "downward"
 
-top_label_gap = abs(float((mean_stock[-1] - mean_bench[-1]) * 100))
-stock_label_shift = 9 if top_label_gap < 0.15 else 0
-bench_label_shift = -9 if top_label_gap < 0.15 else 0
+stock_end_pct = float(mean_stock[-1] * 100)
+bench_end_pct = float(mean_bench[-1] * 100)
+top_label_gap = abs(stock_end_pct - bench_end_pct)
+
+# Avoid overlap when endpoint values are close by separating labels in pixel space.
+MIN_LABEL_GAP_PCT = 0.35
+if top_label_gap < MIN_LABEL_GAP_PCT:
+    label_push = 14
+    if stock_end_pct >= bench_end_pct:
+        stock_label_shift, bench_label_shift = label_push, -label_push
+    else:
+        stock_label_shift, bench_label_shift = -label_push, label_push
+    stock_label_xshift, bench_label_xshift = 14, 8
+else:
+    stock_label_shift = bench_label_shift = 0
+    stock_label_xshift = bench_label_xshift = 8
 
 fig_a = make_subplots(
     rows=2, cols=1,
@@ -275,27 +288,27 @@ fig_a.add_shape(type="line", x0=-WINDOW_PRE, x1=WINDOW_POST, y0=0, y1=0,
 
 fig_a.add_annotation(
     x=WINDOW_POST,
-    y=float(mean_bench[-1] * 100),
+    y=bench_end_pct,
     xref="x",
     yref="y",
     text="QQQ",
     showarrow=False,
     xanchor="left",
     yanchor="middle",
-    xshift=8,
+    xshift=bench_label_xshift,
     yshift=bench_label_shift,
     font=dict(color="#595959", size=12),
 )
 fig_a.add_annotation(
     x=WINDOW_POST,
-    y=float(mean_stock[-1] * 100),
+    y=stock_end_pct,
     xref="x",
     yref="y",
     text="MEAN CR",
     showarrow=False,
     xanchor="left",
     yanchor="middle",
-    xshift=8,
+    xshift=stock_label_xshift,
     yshift=stock_label_shift,
     font=dict(color="#E07A3F", size=12),
 )
