@@ -4,7 +4,7 @@
 
 - Source table: `layoffs.csv`
 - Benchmark ticker: `QQQ`
-- Event window: +/-20 trading days (`WINDOW = 20`)
+- Event window: `[-90, +60]` trading days (`WINDOW_PRE = 90`, `WINDOW_POST = 60`)
 - Heatmap target size: top 70 events by laid-off count (`N = 70`)
 - Price source: `yfinance.download(..., auto_adjust=True)`
 
@@ -18,7 +18,7 @@ Data preparation steps in the app:
 
 The download date range is built at runtime:
 
-- Start: minimum event date minus 90 calendar days
+- Start: minimum event date minus 140 calendar days
 - End: current timestamp plus 1 day
 
 ## Event-Window Construction
@@ -26,12 +26,12 @@ The download date range is built at runtime:
 For each filtered event row:
 
 1. If event date is not a trading day, move to the first trading day on or after that date.
-2. Require a full +/-20-day return window in the benchmark/stock return index.
+2. Require a full `[-90, +60]` return window in the benchmark/stock return index.
 3. Require both stock and benchmark columns in the return window.
 4. Drop the event if either return series has any missing value in the window.
 5. Compute daily abnormal return as stock return minus benchmark return.
-6. Compute CAR as cumulative abnormal return, then shift so T=-20 equals 0.
-7. Compute cumulative stock return and cumulative benchmark return, each anchored to 0 at T=-20.
+6. Compute CAR as cumulative abnormal return, then shift so `T=-90` equals 0.
+7. Compute cumulative stock return and cumulative benchmark return, each anchored to 0 at `T=-90`.
 
 Saved event metadata per valid row:
 
@@ -43,7 +43,7 @@ Saved event metadata per valid row:
 
 ## Panel A Facts (All Valid Events)
 
-Panel A uses all valid events (`n_total`) and has two stacked subplots sharing the same x-axis (`-20..20`).
+Panel A uses all valid events (`n_total`) and has two stacked subplots sharing the same x-axis (`-90..60`).
 
 Top subplot traces:
 
@@ -60,9 +60,11 @@ Visual elements in Panel A:
 - Dashed vertical line at T=0
 - Horizontal y=0 line in top subplot (light gray)
 - Horizontal y=0 line in bottom subplot (dark, thicker)
-- Endpoint text labels at T=20: `QQQ`, `MEAN CR`, `Mean CAR`
+- Endpoint text labels at `T=60`: `QQQ`, `MEAN CR`, `Mean CAR`
 - Legend is enabled and shown to the right
 - Hover mode is `x unified`
+- UI note below Panel A:
+	"Note: A continuous drop in CAR during the [-90, 0] window often serves as an early warning signal for deteriorating business fundamentals."
 
 Bottom subplot y-range is computed from CI min/max with dynamic padding.
 
@@ -72,7 +74,7 @@ Selection and ordering:
 
 1. Start from all valid events used in Panel A.
 2. Select top events by laid-off count in descending order, limited to 70.
-3. Within that subset, sort rows by T+20 CAR in descending order (best to worst).
+3. Within that subset, sort rows by `T+60` CAR in descending order (best to worst).
 
 Displayed row count:
 
@@ -80,12 +82,12 @@ Displayed row count:
 
 Heatmap encoding:
 
-- X-axis: trading days T=-20 to T=20
+- X-axis: trading days `T=-90` to `T=+60`
 - Z values: CAR in percent
 - Y labels: ranked rows with formatted date (`01. Company (DD Mon 'YY)`)
 - Color scale: stepped diverging bins with bounds
-	`[-25, -12, -6, -2, -0.5, 0.5, 2, 6, 12, 25]`
-- Clamp: `zmin=-25`, `zmax=25`, midpoint at 0
+	`[-40, -20, -10, -4, -1, 1, 4, 10, 20, 40]`
+- Clamp: `zmin=-40`, `zmax=40`, midpoint at 0
 - Cell gaps: `xgap=0`, `ygap=0`
 - Dashed vertical line at T=0
 
@@ -102,7 +104,7 @@ Hover fields per cell:
 
 - Streamlit page is wide layout with collapsed sidebar.
 - Sidebar collapse toggle button is hidden via CSS.
-- Common x-range in both panels: `[-20.5, 20.5]`
+- Common x-range in both panels: `[-90.5, 60.5]`
 - Common x-domain in both panels: `[0.0, 0.92]`
 - Common margins in both panels: left `210`, right `120`
 - Background color: `#FAFAFA` for plot and paper

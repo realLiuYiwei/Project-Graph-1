@@ -374,10 +374,6 @@ fig_a.update_yaxes(
 )
 
 st.plotly_chart(fig_a, use_container_width=True)
-st.caption(
-    "Note: A continuous drop in CAR during the [-90, 0] window often serves as an early warning signal "
-    "for deteriorating business fundamentals."
-)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  PANEL B — Heatmap: top 70 by layoff count, sorted best→worst CAR at T+60
