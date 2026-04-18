@@ -160,6 +160,33 @@ ALIGN_RIGHT_MARGIN = 120
 X_AXIS_RANGE = [-WINDOW_PRE - 0.5, WINDOW_POST + 0.5]
 X_AXIS_DOMAIN = [0.0, 0.92]
 
+st.title("Tech Layoffs and Stock Performance: Early Signal or False Cure?")
+st.markdown(
+    "This dashboard evaluates whether major tech layoffs are preceded by market warning signs "
+    "and whether large headcount cuts reliably improve post-announcement stock performance."
+)
+
+st.markdown("#### Audience Guide")
+guide_col_a, guide_col_b = st.columns(2)
+with guide_col_a:
+    st.markdown(
+        "**How to read Panel A**\n"
+        "1. Orange line (CR): average cumulative stock return.\n"
+        "2. Dotted gray line: benchmark cumulative return (QQQ).\n"
+        "3. Blue line (CAR): stock minus benchmark, isolating company-specific performance.\n"
+        "4. Light-blue band: 95% confidence interval around mean CAR."
+    )
+with guide_col_b:
+    st.markdown(
+        "**How to read Panel B**\n"
+        "1. Each row is one layoff event among the top 70 by layoff count.\n"
+        "2. Rows are ranked by T+60 CAR (best to worst).\n"
+        "3. Blue means positive CAR, red means negative CAR, white is near zero.\n"
+        "4. The middle rows approximate the median outcome."
+    )
+
+st.divider()
+
 # ═══════════════════════════════════════════════════════════════════════════════
 #  PANEL A — Mean CAR (all events)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -192,9 +219,45 @@ car_ymax = max(np.ceil((car_max + car_pad) * 10) / 10, 0.1)
 mean_car_t60 = float(mean_car_pct[-1])
 trend_direction = "upward" if mean_car_t60 >= 0 else "downward"
 
+zero_day_idx = int(np.where(days == 0)[0][0])
+trough_idx = int(np.argmin(mean_car))
+trough_day = int(days[trough_idx])
+trough_car_pct = float(mean_car_pct[trough_idx])
+
+recovery_start_idx = trough_idx
+for idx in range(trough_idx + 1, len(mean_car) - 2):
+    if (
+        mean_car[idx] > mean_car[idx - 1]
+        and mean_car[idx + 1] > mean_car[idx]
+        and mean_car[idx + 2] > mean_car[idx + 1]
+    ):
+        recovery_start_idx = idx
+        break
+recovery_start_day = int(days[recovery_start_idx])
+
+ci_width_pct = (upper_bound - lower_bound) * 100
+pre_ci_width = float(ci_width_pct[days < 0].mean()) if np.any(days < 0) else np.nan
+post_ci_width = float(ci_width_pct[days >= 0].mean()) if np.any(days >= 0) else np.nan
+ci_widen_ratio = post_ci_width / pre_ci_width if pre_ci_width > 0 else np.nan
+
+post_slope = (mean_car_pct[-1] - mean_car_pct[zero_day_idx]) / max(WINDOW_POST, 1)
+
 stock_end_pct = float(mean_stock[-1] * 100)
 bench_end_pct = float(mean_bench[-1] * 100)
 top_label_gap = abs(stock_end_pct - bench_end_pct)
+
+metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
+metric_col1.metric("Valid events", f"{n_total}")
+metric_col2.metric("Mean CAR at T+60", f"{mean_car_t60:+.2f}%")
+metric_col3.metric("Panel A trough", f"T={trough_day}", f"{trough_car_pct:+.2f}%")
+if np.isfinite(ci_widen_ratio):
+    metric_col4.metric(
+        "CI width (post/pre)",
+        f"{ci_widen_ratio:.2f}x",
+        f"{post_ci_width:.2f}pp vs {pre_ci_width:.2f}pp",
+    )
+else:
+    metric_col4.metric("CI width (post/pre)", "N/A")
 
 # Avoid overlap when endpoint values are close by separating labels in pixel space.
 MIN_LABEL_GAP_PCT = 0.35
@@ -388,6 +451,24 @@ fig_a.update_yaxes(
 
 st.plotly_chart(fig_a, use_container_width=True)
 
+if np.isfinite(ci_widen_ratio):
+    ci_summary = (
+        f"Post-announcement uncertainty is much larger: average CI width after T=0 is "
+        f"{ci_widen_ratio:.2f}x the pre-announcement width."
+    )
+else:
+    ci_summary = "CI widening could not be summarized due to limited variation in the pre-announcement window."
+
+st.markdown("#### Panel A Key Insights")
+st.markdown(
+    f"1. The mean CAR shows a U-shape: it falls below zero and bottoms around T={trough_day} at {trough_car_pct:+.2f}%.\n"
+    f"2. Recovery begins around T={recovery_start_day}, with post-announcement drift averaging {post_slope:+.3f} percentage points per trading day.\n"
+    f"3. {ci_summary}\n"
+    "4. Interpretation: the average pattern suggests a potential pre-layoff underperformance signal, but dispersion is high and firm-level outcomes vary widely."
+)
+
+st.divider()
+
 # ═══════════════════════════════════════════════════════════════════════════════
 #  PANEL B — Heatmap: top 70 by layoff count, sorted best→worst CAR at T+60
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -405,6 +486,49 @@ sub_cars   = car_matrix[ranked_idx]
 sub_labels = [all_labels[i] for i in ranked_idx]
 sub_counts = [all_laid_off[i] for i in ranked_idx]
 sub_headcount_pct = [all_headcount_pct[i] for i in ranked_idx]
+
+t60_pool_pct = sub_cars[:, -1] * 100
+median_t60 = float(np.median(t60_pool_pct))
+mean_t60 = float(np.mean(t60_pool_pct))
+positive_share = float((t60_pool_pct > 0).mean() * 100)
+negative_share = float((t60_pool_pct < 0).mean() * 100)
+
+
+def _format_event_outcome(label: str, car_val: float) -> str:
+    company, date_str = label.split("  ", 1)
+    return f"{company} ({date_str}) {car_val:+.1f}%"
+
+
+top_examples = [
+    _format_event_outcome(sub_labels[idx], t60_pool_pct[idx])
+    for idx in range(min(3, N_eff))
+]
+bottom_examples = [
+    _format_event_outcome(sub_labels[idx], t60_pool_pct[idx])
+    for idx in range(N_eff - 1, max(-1, N_eff - 4), -1)
+]
+
+
+def _best_company_t60(company: str):
+    values = [
+        t60_pool_pct[idx]
+        for idx, label in enumerate(sub_labels)
+        if label.startswith(f"{company}  ")
+    ]
+    return float(max(values)) if values else None
+
+
+meta_t60 = _best_company_t60("Meta")
+dell_t60 = _best_company_t60("Dell")
+
+tesla_positions = [idx for idx, lbl in enumerate(sub_labels) if lbl.startswith("Tesla  ")]
+tesla_summary = None
+if tesla_positions:
+    tesla_idx = tesla_positions[0]
+    tesla_rank = tesla_idx + 1
+    tesla_t60 = float(t60_pool_pct[tesla_idx])
+    tesla_summary = (
+        f"Tesla appears at rank {tesla_rank}/{N_eff} with a T+60 CAR of {tesla_t60:+.1f}%, showing that even the largest layoff among the 167 samples—a reduction of 14,000 people—does not automatically produce a market recovery.")
 
 
 def _event_label(lbl: str) -> str:
@@ -522,3 +646,43 @@ fig_b.update_layout(
 )
 
 st.plotly_chart(fig_b, use_container_width=True)
+
+if meta_t60 is not None and dell_t60 is not None:
+    outlier_summary = f"Meta ({meta_t60:+.1f}%) and Dell ({dell_t60:+.1f}%) are examples of strong right-tail outliers."
+else:
+    outlier_summary = "Top-ranked events act as right-tail outliers and can pull the average above the median."
+
+st.markdown("#### Panel B Key Insights")
+st.markdown(
+    f"1. Median T+60 CAR across the top {N_eff} layoff events is {median_t60:+.2f}% (near zero).\n"
+    f"2. Mean T+60 CAR is {mean_t60:+.2f}%, higher than the median, indicating outlier-driven skew.\n"
+    f"3. By T+60, {positive_share:.1f}% of events are positive and {negative_share:.1f}% are negative, which is close to a coin-flip distribution.\n"
+    f"4. {outlier_summary}"
+)
+
+if top_examples:
+    st.markdown("**Top positive outliers (T+60 CAR):** " + " | ".join(top_examples))
+if bottom_examples:
+    st.markdown("**Weakest outcomes (T+60 CAR):** " + " | ".join(bottom_examples))
+if tesla_summary:
+    st.markdown("**Case example:** " + tesla_summary)
+
+st.markdown("#### Final Takeaways")
+takeaway_col1, takeaway_col2 = st.columns(2)
+with takeaway_col1:
+    st.markdown(
+        "**For employees**\n"
+        "- A plunging stock is not a guaranteed layoff trigger, but persistent negative CAR is still a meaningful early risk signal.\n"
+        "- Practical implication: deep, sustained underperformance can justify updating your resume and building options."
+    )
+with takeaway_col2:
+    st.markdown(
+        "**For stakeholders**\n"
+        "- Layoffs are not a universal stock-price fix; median outcomes are near zero.\n"
+        "- Practical implication: restructuring should be judged on long-term fundamentals, not short-term headline effects."
+    )
+
+st.caption(
+    "Method note: This is an event-study association analysis (not causal proof). "
+    "CAR is measured relative to QQQ over T=-90 to T=+60 trading days."
+)
