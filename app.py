@@ -11,9 +11,73 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# ── hide sidebar toggle ───────────────────────────────────────────────────────
+# ── dark style only (no logic changes) ───────────────────────────────────────
 st.markdown(
-    "<style>[data-testid='collapsedControl']{display:none}</style>",
+    """
+    <style>
+    :root {
+        --bg-main: #070d1a;
+        --bg-panel: #111a2b;
+        --bg-panel-soft: #0d1525;
+        --bg-plot: #0f192c;
+        --border: #263750;
+        --text-main: #e6eeff;
+        --text-soft: #9eb1d4;
+    }
+
+    [data-testid='collapsedControl'] {
+        display: none;
+    }
+
+    [data-testid='stAppViewContainer'] {
+        background:
+            radial-gradient(1200px 500px at 6% -10%, rgba(78, 160, 255, 0.16), transparent 55%),
+            radial-gradient(1000px 500px at 100% -20%, rgba(79, 109, 255, 0.11), transparent 52%),
+            var(--bg-main);
+    }
+
+    [data-testid='stHeader'] {
+        background: transparent;
+    }
+
+    html, body, [class*='css'] {
+        color: var(--text-main);
+        font-family: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    [data-testid='stMetric'] {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--bg-panel);
+        padding: 0.55rem 0.65rem;
+    }
+
+    [data-testid='stMetricLabel'],
+    [data-testid='stMetricValue'],
+    [data-testid='stMetricDelta'] {
+        color: var(--text-main);
+    }
+
+    [data-testid='stMarkdownContainer'] p,
+    [data-testid='stMarkdownContainer'] li,
+    [data-testid='stMarkdownContainer'] h1,
+    [data-testid='stMarkdownContainer'] h2,
+    [data-testid='stMarkdownContainer'] h3,
+    [data-testid='stMarkdownContainer'] h4,
+    [data-testid='stMarkdownContainer'] strong,
+    [data-testid='stMarkdownContainer'] span {
+        color: var(--text-main);
+    }
+
+    [data-testid='stMultiSelect'] > div,
+    [data-testid='stSelectbox'] > div,
+    [data-testid='stRadio'] > div,
+    [data-testid='stNumberInput'] > div {
+        background: var(--bg-panel-soft);
+        border-color: var(--border);
+    }
+    </style>
+    """,
     unsafe_allow_html=True,
 )
 
@@ -21,30 +85,76 @@ st.markdown(
 #  CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
-WINDOW_PRE  = 90
+WINDOW_PRE = 90
 WINDOW_POST = 60
 BENCHMARK = "QQQ"
-N         = 70   # top N events by layoff count
+N = 70  # top N events by layoff count
+
+THEME = {
+    "page_bg": "#070d1a",
+    "panel_bg": "#111a2b",
+    "plot_bg": "#0f192c",
+    "grid": "rgba(159, 179, 218, 0.18)",
+    "text": "#e6eeff",
+    "subtext": "#9eb1d4",
+    "border": "#263750",
+    "accent_blue": "#4ea0ff",
+    "accent_orange": "#e7b15e",
+    "accent_gray": "#9aa6bd",
+}
 
 TICKER_MAP = {
-    "Amazon": "AMZN", "Apple": "AAPL", "Microsoft": "MSFT",
-    "Google": "GOOGL", "Meta": "META", "Tesla": "TSLA",
-    "Nvidia": "NVDA", "Netflix": "NFLX", "Oracle": "ORCL",
-    "IBM": "IBM", "Intel": "INTC", "Cisco": "CSCO",
-    "Salesforce": "CRM", "Adobe": "ADBE", "SAP": "SAP",
-    "Qualcomm": "QCOM", "Dell": "DELL", "HP": "HPQ",
-    "Uber": "UBER", "Lyft": "LYFT", "Airbnb": "ABNB",
-    "Spotify": "SPOT", "Shopify": "SHOP", "Zoom": "ZM",
-    "Snap": "SNAP", "Pinterest": "PINS", "Robinhood": "HOOD",
-    "Coinbase": "COIN", "PayPal": "PYPL", "eBay": "EBAY",
-    "Dropbox": "DBX", "DocuSign": "DOCU", "Twilio": "TWLO",
-    "Workday": "WDAY", "ServiceNow": "NOW", "Palantir": "PLTR",
-    "Unity": "U", "Roblox": "RBLX", "EA": "EA",
-    "Autodesk": "ADSK", "Okta": "OKTA", "Zendesk": "ZEN",
-    "HubSpot": "HUBS", "Atlassian": "TEAM", "Cloudflare": "NET",
-    "Datadog": "DDOG", "Snowflake": "SNOW",
-    "Palo Alto Networks": "PANW", "CrowdStrike": "CRWD",
-    "MongoDB": "MDB", "Block": "SQ",
+    "Amazon": "AMZN",
+    "Apple": "AAPL",
+    "Microsoft": "MSFT",
+    "Google": "GOOGL",
+    "Meta": "META",
+    "Tesla": "TSLA",
+    "Nvidia": "NVDA",
+    "Netflix": "NFLX",
+    "Oracle": "ORCL",
+    "IBM": "IBM",
+    "Intel": "INTC",
+    "Cisco": "CSCO",
+    "Salesforce": "CRM",
+    "Adobe": "ADBE",
+    "SAP": "SAP",
+    "Qualcomm": "QCOM",
+    "Dell": "DELL",
+    "HP": "HPQ",
+    "Uber": "UBER",
+    "Lyft": "LYFT",
+    "Airbnb": "ABNB",
+    "Spotify": "SPOT",
+    "Shopify": "SHOP",
+    "Zoom": "ZM",
+    "Snap": "SNAP",
+    "Pinterest": "PINS",
+    "Robinhood": "HOOD",
+    "Coinbase": "COIN",
+    "PayPal": "PYPL",
+    "eBay": "EBAY",
+    "Dropbox": "DBX",
+    "DocuSign": "DOCU",
+    "Twilio": "TWLO",
+    "Workday": "WDAY",
+    "ServiceNow": "NOW",
+    "Palantir": "PLTR",
+    "Unity": "U",
+    "Roblox": "RBLX",
+    "EA": "EA",
+    "Autodesk": "ADSK",
+    "Okta": "OKTA",
+    "Zendesk": "ZEN",
+    "HubSpot": "HUBS",
+    "Atlassian": "TEAM",
+    "Cloudflare": "NET",
+    "Datadog": "DDOG",
+    "Snowflake": "SNOW",
+    "Palo Alto Networks": "PANW",
+    "CrowdStrike": "CRWD",
+    "MongoDB": "MDB",
+    "Block": "SQ",
     "Twitter": "TWTR",
 }
 
@@ -52,29 +162,28 @@ TICKER_MAP = {
 #  DATA LOADING
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 @st.cache_data(show_spinner="Loading data…")
 def load_data():
     df_raw = pd.read_csv("layoffs.csv")
-    df_raw["Date"]       = pd.to_datetime(df_raw["Date"],      errors="coerce")
-    df_raw["Laid_Off"]   = pd.to_numeric(df_raw["Laid_Off"],   errors="coerce")
+    df_raw["Date"] = pd.to_datetime(df_raw["Date"], errors="coerce")
+    df_raw["Laid_Off"] = pd.to_numeric(df_raw["Laid_Off"], errors="coerce")
     df_raw["Percentage"] = pd.to_numeric(df_raw["Percentage"], errors="coerce")
-    df_raw["Ticker"]     = df_raw["Company"].map(TICKER_MAP)
+    df_raw["Ticker"] = df_raw["Company"].map(TICKER_MAP)
 
     df_events = df_raw.dropna(subset=["Ticker", "Date", "Laid_Off"]).copy()
     df_events = df_events[
-        ~((df_events["Company"] == "Twitter") &
-          (df_events["Date"] > pd.Timestamp("2022-10-27")))
+        ~((df_events["Company"] == "Twitter") & (df_events["Date"] > pd.Timestamp("2022-10-27")))
     ].reset_index(drop=True)
 
-    tickers    = sorted(df_events["Ticker"].unique().tolist()) + [BENCHMARK]
+    tickers = sorted(df_events["Ticker"].unique().tolist()) + [BENCHMARK]
     start_date = (df_events["Date"].min() - pd.Timedelta(days=140)).strftime("%Y-%m-%d")
-    end_date   = (pd.Timestamp.now() + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
+    end_date = (pd.Timestamp.now() + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
 
-    raw = yf.download(tickers, start=start_date, end=end_date,
-                      auto_adjust=True, progress=False)
+    raw = yf.download(tickers, start=start_date, end=end_date, auto_adjust=True, progress=False)
     if raw is None or raw.empty:
         raise RuntimeError("yf.download returned no data")
-    prices  = raw["Close"]
+    prices = raw["Close"]
     returns = prices.pct_change(fill_method=None)
 
     if returns.index.tz is not None:
@@ -104,7 +213,7 @@ def compute_cars(_df_events, _prices, _returns):
         if loc < WINDOW_PRE or loc + WINDOW_POST >= len(_returns):
             continue
 
-        win_r = _returns.iloc[loc - WINDOW_PRE: loc + WINDOW_POST + 1]
+        win_r = _returns.iloc[loc - WINDOW_PRE : loc + WINDOW_POST + 1]
         if ticker not in win_r.columns or BENCHMARK not in win_r.columns:
             continue
 
@@ -123,14 +232,12 @@ def compute_cars(_df_events, _prices, _returns):
         all_bench_windows.append(cum_bench.values)
         all_labels.append(f"{row['Company']}  {event_date.strftime('%Y-%m-%d')}")
         all_laid_off.append(int(row["Laid_Off"]))
-        all_headcount_pct.append(
-            float(row["Percentage"]) if pd.notna(row["Percentage"]) else np.nan
-        )
+        all_headcount_pct.append(float(row["Percentage"]) if pd.notna(row["Percentage"]) else np.nan)
 
-    car_matrix   = np.array(all_cars)
+    car_matrix = np.array(all_cars)
     price_matrix = np.array(all_price_windows)
     bench_matrix = np.array(all_bench_windows)
-    days         = np.arange(-WINDOW_PRE, WINDOW_POST + 1)
+    days = np.arange(-WINDOW_PRE, WINDOW_POST + 1)
 
     return (
         car_matrix,
@@ -191,7 +298,7 @@ st.divider()
 #  PANEL A — Mean CAR (all events)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-mean_car   = car_matrix.mean(axis=0)
+mean_car = car_matrix.mean(axis=0)
 mean_stock = price_matrix.mean(axis=0)
 mean_bench = bench_matrix.mean(axis=0)
 
@@ -217,7 +324,6 @@ car_ymin = min(np.floor((car_min - car_pad) * 10) / 10, -0.1)
 car_ymax = max(np.ceil((car_max + car_pad) * 10) / 10, 0.1)
 
 mean_car_t60 = float(mean_car_pct[-1])
-trend_direction = "upward" if mean_car_t60 >= 0 else "downward"
 
 zero_day_idx = int(np.where(days == 0)[0][0])
 trough_idx = int(np.argmin(mean_car))
@@ -273,7 +379,8 @@ else:
     stock_label_xshift = bench_label_xshift = 8
 
 fig_a = make_subplots(
-    rows=2, cols=1,
+    rows=2,
+    cols=1,
     shared_xaxes=True,
     vertical_spacing=0.08,
     row_heights=[0.42, 0.58],
@@ -281,25 +388,29 @@ fig_a = make_subplots(
 
 fig_a.add_trace(
     go.Scatter(
-        x=days, y=mean_stock * 100,
+        x=days,
+        y=mean_stock * 100,
         name="Mean CR",
         legendrank=1,
-        line=dict(color="#E07A3F", width=1.8),
+        line=dict(color=THEME["accent_orange"], width=1.9),
         hovertemplate="Day %{x}: Avg stock %{y:.2f}%<extra></extra>",
-        showlegend=True
+        showlegend=True,
     ),
-    row=1, col=1,
+    row=1,
+    col=1,
 )
 fig_a.add_trace(
     go.Scatter(
-        x=days, y=mean_bench * 100,
+        x=days,
+        y=mean_bench * 100,
         name="Benchmark (QQQ)",
         legendrank=2,
-        line=dict(color="#595959", width=1.4, dash="dot"),
+        line=dict(color=THEME["accent_gray"], width=1.5, dash="dot"),
         hovertemplate="Day %{x}: QQQ %{y:.2f}%<extra></extra>",
-        showlegend=True
+        showlegend=True,
     ),
-    row=1, col=1,
+    row=1,
+    col=1,
 )
 
 fig_a.add_trace(
@@ -307,7 +418,7 @@ fig_a.add_trace(
         x=days,
         y=upper_bound * 100,
         mode="lines",
-        line=dict(width=0, color="rgba(72,120,207,0)"),
+        line=dict(width=0, color="rgba(78, 160, 255, 0)"),
         hoverinfo="skip",
         showlegend=False,
     ),
@@ -319,9 +430,9 @@ fig_a.add_trace(
         x=days,
         y=lower_bound * 100,
         mode="lines",
-        line=dict(width=0, color="rgba(72,120,207,0)"),
+        line=dict(width=0, color="rgba(78, 160, 255, 0)"),
         fill="tonexty",
-        fillcolor="rgba(72,120,207,0.20)",
+        fillcolor="rgba(78, 160, 255, 0.22)",
         name="Mean CAR (±95% CI)",
         legendrank=3,
         hovertemplate="Day %{x}: 95% CI [%{y:.3f}%, %{customdata:.3f}%]<extra></extra>",
@@ -333,21 +444,39 @@ fig_a.add_trace(
 )
 fig_a.add_trace(
     go.Scatter(
-        x=days, y=mean_car * 100,
+        x=days,
+        y=mean_car * 100,
         name="Mean CAR",
         legendrank=4,
-        line=dict(color="#4878CF", width=2.2),
+        line=dict(color=THEME["accent_blue"], width=2.2),
         hovertemplate="Day %{x}: %{y:.3f}%<extra></extra>",
         showlegend=True,
     ),
-    row=2, col=1,
+    row=2,
+    col=1,
 )
 
-fig_a.add_vline(x=0, line=dict(color="#333", dash="dash", width=1.4))
-fig_a.add_shape(type="line", x0=-WINDOW_PRE, x1=WINDOW_POST, y0=0, y1=0,
-                line=dict(color="#c9c9c9", width=0.8), row=1, col=1)
-fig_a.add_shape(type="line", x0=-WINDOW_PRE, x1=WINDOW_POST, y0=0, y1=0,
-                line=dict(color="#1f1f1f", width=1.8), row=2, col=1)
+fig_a.add_vline(x=0, line=dict(color="#7f93b8", dash="dash", width=1.3))
+fig_a.add_shape(
+    type="line",
+    x0=-WINDOW_PRE,
+    x1=WINDOW_POST,
+    y0=0,
+    y1=0,
+    line=dict(color="#a8b4cc", width=0.9),
+    row=1,
+    col=1,
+)
+fig_a.add_shape(
+    type="line",
+    x0=-WINDOW_PRE,
+    x1=WINDOW_POST,
+    y0=0,
+    y1=0,
+    line=dict(color="#b7c5df", width=1.25),
+    row=2,
+    col=1,
+)
 
 fig_a.add_annotation(
     x=WINDOW_POST,
@@ -360,7 +489,7 @@ fig_a.add_annotation(
     yanchor="middle",
     xshift=bench_label_xshift,
     yshift=bench_label_shift,
-    font=dict(color="#595959", size=12),
+    font=dict(color=THEME["accent_gray"], size=12),
 )
 fig_a.add_annotation(
     x=WINDOW_POST,
@@ -373,7 +502,7 @@ fig_a.add_annotation(
     yanchor="middle",
     xshift=stock_label_xshift,
     yshift=stock_label_shift,
-    font=dict(color="#E07A3F", size=12),
+    font=dict(color=THEME["accent_orange"], size=12),
 )
 fig_a.add_annotation(
     x=WINDOW_POST,
@@ -385,19 +514,22 @@ fig_a.add_annotation(
     xanchor="left",
     yanchor="middle",
     xshift=8,
-    font=dict(color="#4878CF", size=12),
+    font=dict(color=THEME["accent_blue"], size=12),
 )
 
 fig_a.update_layout(
     title=dict(
         text=(
+            f"<span style='color:{THEME['text']}'>"
             "Mean Cumulative Return (CR) and Cumulative Abnormal Return (CAR) Around Tech Layoff Announcements "
-            f"(T={-WINDOW_PRE} to T=+{WINDOW_POST} Trading Days)"
-            f"<br><sup>Sample Size: {n_total} Events | Comparison: Stock Mean vs. Benchmark ({BENCHMARK}) | "
+            f"(T={-WINDOW_PRE} to T=+{WINDOW_POST} Trading Days)</span>"
+            f"<br><sup style='color:{THEME['subtext']}'>"
+            f"Sample Size: {n_total} Events | Comparison: Stock Mean vs. Benchmark ({BENCHMARK}) | "
             "Additional Metric: CAR 95% Confidence Interval</sup>"
         ),
-        font=dict(size=14),
-        x=0.5, xanchor="center",
+        font=dict(size=14, color=THEME["text"]),
+        x=0.5,
+        xanchor="center",
     ),
     height=600,
     margin=dict(l=ALIGN_LEFT_MARGIN, r=ALIGN_RIGHT_MARGIN, t=78, b=50),
@@ -409,36 +541,54 @@ fig_a.update_layout(
         y=0.02,
         xanchor="left",
         x=1.02,
-        bgcolor="rgba(250,250,250,0.70)",
+        bgcolor="rgba(10, 17, 30, 0.88)",
+        bordercolor=THEME["border"],
+        borderwidth=1,
+        font=dict(color=THEME["text"]),
     ),
-    plot_bgcolor="#FAFAFA",
-    paper_bgcolor="#FAFAFA",
+    font=dict(color=THEME["text"], family="IBM Plex Sans, Avenir Next, Segoe UI, sans-serif"),
+    plot_bgcolor=THEME["plot_bg"],
+    paper_bgcolor=THEME["panel_bg"],
     hovermode="x unified",
 )
 fig_a.update_xaxes(
     range=X_AXIS_RANGE,
     tickmode="linear",
     dtick=5,
-    gridcolor="rgba(0, 0, 0, 0.10)",
+    gridcolor=THEME["grid"],
     domain=X_AXIS_DOMAIN,
     row=1,
     col=1,
+    showline=True,
+    linecolor=THEME["border"],
+    tickfont=dict(color=THEME["subtext"]),
+    title_font=dict(color=THEME["text"]),
 )
 fig_a.update_xaxes(
     title_text="Trading Days Relative to Announcement  (T = 0)",
     range=X_AXIS_RANGE,
     tickmode="linear",
     dtick=5,
-    gridcolor="rgba(0, 0, 0, 0.10)",
+    gridcolor=THEME["grid"],
     domain=X_AXIS_DOMAIN,
     row=2,
     col=1,
+    showline=True,
+    linecolor=THEME["border"],
+    tickfont=dict(color=THEME["subtext"]),
+    title_font=dict(color=THEME["text"]),
 )
 fig_a.update_yaxes(
     title_text="Cumulative Return (%)",
     tickformat=".1f",
     showgrid=False,
-    zeroline=False, row=1, col=1,
+    zeroline=False,
+    row=1,
+    col=1,
+    showline=True,
+    linecolor=THEME["border"],
+    tickfont=dict(color=THEME["subtext"]),
+    title_font=dict(color=THEME["text"]),
 )
 fig_a.update_yaxes(
     title_text="Cumulative Abnormal Return (CAR, %)",
@@ -446,7 +596,12 @@ fig_a.update_yaxes(
     showgrid=False,
     zeroline=False,
     range=[car_ymin, car_ymax],
-    row=2, col=1,
+    row=2,
+    col=1,
+    showline=True,
+    linecolor=THEME["border"],
+    tickfont=dict(color=THEME["subtext"]),
+    title_font=dict(color=THEME["text"]),
 )
 
 st.plotly_chart(fig_a, use_container_width=True)
@@ -476,13 +631,13 @@ st.divider()
 car_final = car_matrix[:, -1]
 
 # top 70 by layoff count
-pool_idx  = np.argsort(all_laid_off)[::-1][:min(N, n_total)]
+pool_idx = np.argsort(all_laid_off)[::-1][: min(N, n_total)]
 # within that pool, order best → worst CAR at T+60
-order     = np.argsort(car_final[pool_idx])[::-1]
+order = np.argsort(car_final[pool_idx])[::-1]
 ranked_idx = pool_idx[order]
-N_eff     = len(ranked_idx)
+N_eff = len(ranked_idx)
 
-sub_cars   = car_matrix[ranked_idx]
+sub_cars = car_matrix[ranked_idx]
 sub_labels = [all_labels[i] for i in ranked_idx]
 sub_counts = [all_laid_off[i] for i in ranked_idx]
 sub_headcount_pct = [all_headcount_pct[i] for i in ranked_idx]
@@ -499,22 +654,14 @@ def _format_event_outcome(label: str, car_val: float) -> str:
     return f"{company} ({date_str}) {car_val:+.1f}%"
 
 
-top_examples = [
-    _format_event_outcome(sub_labels[idx], t60_pool_pct[idx])
-    for idx in range(min(3, N_eff))
-]
+top_examples = [_format_event_outcome(sub_labels[idx], t60_pool_pct[idx]) for idx in range(min(3, N_eff))]
 bottom_examples = [
-    _format_event_outcome(sub_labels[idx], t60_pool_pct[idx])
-    for idx in range(N_eff - 1, max(-1, N_eff - 4), -1)
+    _format_event_outcome(sub_labels[idx], t60_pool_pct[idx]) for idx in range(N_eff - 1, max(-1, N_eff - 4), -1)
 ]
 
 
 def _best_company_t60(company: str):
-    values = [
-        t60_pool_pct[idx]
-        for idx, label in enumerate(sub_labels)
-        if label.startswith(f"{company}  ")
-    ]
+    values = [t60_pool_pct[idx] for idx, label in enumerate(sub_labels) if label.startswith(f"{company}  ")]
     return float(max(values)) if values else None
 
 
@@ -528,7 +675,8 @@ if tesla_positions:
     tesla_rank = tesla_idx + 1
     tesla_t60 = float(t60_pool_pct[tesla_idx])
     tesla_summary = (
-        f"Tesla appears at rank {tesla_rank}/{N_eff} with a T+60 CAR of {tesla_t60:+.1f}%, showing that even the largest layoff among the 167 samples—a reduction of 14,000 people—does not automatically produce a market recovery.")
+        f"Tesla appears at rank {tesla_rank}/{N_eff} with a T+60 CAR of {tesla_t60:+.1f}%, showing that even the largest layoff among the 167 samples—a reduction of 14,000 people—does not automatically produce a market recovery."
+    )
 
 
 def _event_label(lbl: str) -> str:
@@ -566,15 +714,15 @@ for e_idx in range(N_eff):
 
 COLOR_BOUNDS = [-40, -20, -10, -4, -1, 1, 4, 10, 20, 40]
 COLOR_STEPS = [
-    "#67001f",
-    "#b2182b",
-    "#d6604d",
-    "#f4a582",
-    "#f7f7f7",
-    "#d1e5f0",
-    "#92c5de",
-    "#4393c3",
-    "#2166ac",
+    "#5f0f24",
+    "#8f1d36",
+    "#c54e4e",
+    "#e4937c",
+    "#c8d7ee",
+    "#8fc3e5",
+    "#59a5d4",
+    "#2f81be",
+    "#15558f",
 ]
 
 
@@ -600,48 +748,65 @@ fig_b = go.Figure(
         colorscale=HEATMAP_COLORSCALE,
         zmid=0,
         zmin=-COLOR_CLAMP,
-        zmax= COLOR_CLAMP,
+        zmax=COLOR_CLAMP,
         text=hover_text,
         hovertemplate="%{text}<extra></extra>",
         colorbar=dict(
             title=dict(text="CAR (%)", side="right"),
             tickformat=".0f",
             tickvals=[-40, -20, -10, -4, 0, 4, 10, 20, 40],
-            lenmode="fraction", len=0.80,
+            lenmode="fraction",
+            len=0.80,
             thickness=14,
             x=0.95,
             xanchor="left",
+            titlefont=dict(color=THEME["text"]),
+            tickfont=dict(color=THEME["subtext"]),
         ),
-        xgap=0, ygap=0,
+        xgap=0,
+        ygap=0,
     )
 )
 
-fig_b.add_vline(x=0, line=dict(color="#222", dash="dash", width=1.6))
+fig_b.add_vline(x=0, line=dict(color="#7f93b8", dash="dash", width=1.4))
 
 fig_b.update_layout(
     title=dict(
         text=(
-        "Time-Series Heatmap of Cumulative Abnormal Return (CAR) for Major Tech Layoff Events"
-        f"<br><sup>Data Scope: Top {N_eff} Events by Absolute Headcount Reduction | Sorting Rule: Descending Order by T+60 CAR</sup>"
-        f"<br><sup>Window: T={-WINDOW_PRE} to T=+{WINDOW_POST} | Target N = {N} | Available Valid Events = {n_total}</sup>"
+            f"<span style='color:{THEME['text']}'>"
+            "Time-Series Heatmap of Cumulative Abnormal Return (CAR) for Major Tech Layoff Events"
+            "</span>"
+            f"<br><sup style='color:{THEME['subtext']}'>"
+            f"Data Scope: Top {N_eff} Events by Absolute Headcount Reduction | Sorting Rule: Descending Order by T+60 CAR</sup>"
+            f"<br><sup style='color:{THEME['subtext']}'>"
+            f"Window: T={-WINDOW_PRE} to T=+{WINDOW_POST} | Target N = {N} | Available Valid Events = {n_total}</sup>"
         ),
-        font=dict(size=14),
-        x=0.5, xanchor="center",
+        font=dict(size=14, color=THEME["text"]),
+        x=0.5,
+        xanchor="center",
     ),
     height=max(700, N_eff * 16 + 160),
     margin=dict(l=ALIGN_LEFT_MARGIN, r=ALIGN_RIGHT_MARGIN, t=78, b=55),
-    plot_bgcolor="#FAFAFA",
-    paper_bgcolor="#FAFAFA",
+    font=dict(color=THEME["text"], family="IBM Plex Sans, Avenir Next, Segoe UI, sans-serif"),
+    plot_bgcolor=THEME["plot_bg"],
+    paper_bgcolor=THEME["panel_bg"],
     xaxis=dict(
         title="Trading Days Relative to Announcement  (T = 0)",
-        tickmode="linear", dtick=5,
-        gridcolor="rgba(0, 0, 0, 0.10)",
+        titlefont=dict(color=THEME["text"]),
+        tickmode="linear",
+        dtick=5,
+        gridcolor=THEME["grid"],
         range=X_AXIS_RANGE,
         domain=X_AXIS_DOMAIN,
+        showline=True,
+        linecolor=THEME["border"],
+        tickfont=dict(color=THEME["subtext"]),
     ),
     yaxis=dict(
         autorange="reversed",
-        tickfont=dict(size=10, color="#555555"),
+        tickfont=dict(size=10, color=THEME["subtext"]),
+        showline=True,
+        linecolor=THEME["border"],
     ),
 )
 
