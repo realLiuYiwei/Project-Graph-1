@@ -22,7 +22,7 @@ st.markdown(
         --bg-plot: #0f192c;
         --border: #263750;
         --text-main: #e6eeff;
-        --text-soft: #9eb1d4;
+        --text-soft: #c3d2f1;
     }
 
     [data-testid='collapsedControl'] {
@@ -69,6 +69,13 @@ st.markdown(
         color: var(--text-main);
     }
 
+    [data-testid='stCaptionContainer'],
+    [data-testid='stCaptionContainer'] p,
+    .stCaption,
+    .stCaption p {
+        color: var(--text-soft) !important;
+    }
+
     [data-testid='stMultiSelect'] > div,
     [data-testid='stSelectbox'] > div,
     [data-testid='stRadio'] > div,
@@ -96,7 +103,7 @@ THEME = {
     "plot_bg": "#0f192c",
     "grid": "rgba(159, 179, 218, 0.18)",
     "text": "#e6eeff",
-    "subtext": "#9eb1d4",
+    "subtext": "#c3d2f1",
     "border": "#263750",
     "accent_blue": "#4ea0ff",
     "accent_orange": "#e7b15e",
@@ -752,7 +759,7 @@ fig_b = go.Figure(
         text=hover_text,
         hovertemplate="%{text}<extra></extra>",
         colorbar=dict(
-            title=dict(text="CAR (%)", side="right"),
+            title=dict(text="CAR (%)", side="right", font=dict(color=THEME["text"])),
             tickformat=".0f",
             tickvals=[-40, -20, -10, -4, 0, 4, 10, 20, 40],
             lenmode="fraction",
@@ -760,7 +767,6 @@ fig_b = go.Figure(
             thickness=14,
             x=0.95,
             xanchor="left",
-            titlefont=dict(color=THEME["text"]),
             tickfont=dict(color=THEME["subtext"]),
         ),
         xgap=0,
@@ -791,8 +797,10 @@ fig_b.update_layout(
     plot_bgcolor=THEME["plot_bg"],
     paper_bgcolor=THEME["panel_bg"],
     xaxis=dict(
-        title="Trading Days Relative to Announcement  (T = 0)",
-        titlefont=dict(color=THEME["text"]),
+        title=dict(
+            text="Trading Days Relative to Announcement  (T = 0)",
+            font=dict(color=THEME["text"]),
+        ),
         tickmode="linear",
         dtick=5,
         gridcolor=THEME["grid"],
