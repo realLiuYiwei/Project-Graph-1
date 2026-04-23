@@ -463,7 +463,7 @@ fig_a.add_trace(
     col=1,
 )
 
-fig_a.add_vline(x=0, line=dict(color="#7f93b8", dash="dash", width=1.3))
+fig_a.add_vline(x=0, line=dict(color="rgb(170, 210, 255)", dash="dash", width=1.8))
 fig_a.add_shape(
     type="line",
     x0=-WINDOW_PRE,
@@ -774,7 +774,7 @@ fig_b = go.Figure(
     )
 )
 
-fig_b.add_vline(x=0, line=dict(color="#7f93b8", dash="dash", width=1.4))
+fig_b.add_vline(x=0, line=dict(color="rgb(170, 210, 255)", dash="dash", width=1.8))
 
 fig_b.update_layout(
     title=dict(
